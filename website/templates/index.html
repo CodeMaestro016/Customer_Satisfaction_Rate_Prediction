@@ -450,6 +450,101 @@
             }
         });
 
+        
+        // Map cities to countries
+        const cityCountryMap = {
+            "Naples": "Italy", "Auckland": "New Zealand", "Tokyo": "Japan", "Granada": "Spain",
+            "Jeju Island": "South Korea", "Paris": "France", "Interlaken": "Switzerland", 
+            "Hong Kong": "Unknown", "Budapest": "Hungary", "Wellington": "New Zealand",
+            "Dubrovnik": "Croatia", "Stockholm": "Sweden", "Madrid": "Spain", "Cancun": "Mexico",
+            "Frankfurt": "Germany", "Rio de Janeiro": "Brazil", "Doha": "Qatar", "London": "UK",
+            "Krakow": "Poland", "Bogotá": "Colombia", "Venice": "Italy", "Glasgow": "Scotland",
+            "St. Petersburg": "Russia", "Cusco": "Peru", "Hanoi": "Vietnam", "Oslo": "Norway",
+            "Moscow": "Russia", "Siem Reap": "Cambodia", "Montreal": "Canada", "Lima": "Peru",
+            "Abu Dhabi": "UAE", "Manila": "Philippines", "Prague": "Czech Republic", "Shanghai": "China",
+            "Maldives": "Maldives", "Boracay": "Philippines", "Marrakech": "Morocco", "Munich": "Germany",
+            "Ho Chi Minh City": "Vietnam", "Rotterdam": "Netherlands", "Langkawi": "Malaysia",
+            "Bali": "Indonesia", "Luang Prabang": "Laos", "Santiago": "Chile", "Cape Town": "South Africa",
+            "Valencia": "Spain", "Vienna": "Austria", "Quito": "Ecuador", "San José": "Costa Rica",
+            "Porto": "Portugal", "Agra (Taj Mahal)": "India", "Warsaw": "Poland", "Dublin": "Ireland",
+            "Florence": "Italy", "Kyoto": "Japan", "Athens": "Greece", "Edinburgh": "Scotland",
+            "Split": "Croatia", "Dubai": "UAE", "Seoul": "South Korea", "Copenhagen": "Denmark",
+            "Helsinki": "Finland", "Singapore": "Singapore", "Amsterdam": "Netherlands",
+            "Machu Picchu": "Peru", "Melbourne": "Australia", "Havana": "Cuba", "Barcelona": "Spain",
+            "Bangkok": "Thailand", "Berlin": "Germany", "Jaipur": "India", "Panama City": "Panama",
+            "Toronto": "Canada", "Galápagos Islands": "Ecuador", "Brussels": "Belgium",
+            "Reykjavik": "Iceland", "Zurich": "Switzerland", "Beijing": "China", "Sydney": "Australia",
+            "Rome": "Italy", "São Paulo": "Brazil", "Mexico City": "Mexico", "Lisbon": "Portugal",
+            "Montego Bay": "Jamaica", "Cartagena": "Colombia", "Istanbul": "Turkey", "Galway": "Ireland",
+            "Buenos Aires": "Argentina", "Milan": "Italy", "Seville": "Spain", "Cairo": "Egypt",
+            "Kathmandu": "Nepal", "Queenstown": "New Zealand", "Phuket": "Thailand", "Vancouver": "Canada",
+            "New Delhi": "India", "Kuala Lumpur": "Malaysia", "Santorini": "Greece"
+        };
+
+        
+const cityInput = document.getElementById('destination_city');
+const countryInput = document.getElementById('destination_country');
+
+// Function to filter cities based on country
+function getCitiesByCountry(country) {
+    const selectedCountry = country.trim().toLowerCase();
+    return Object.keys(cityCountryMap).filter(
+        city => cityCountryMap[city].toLowerCase() === selectedCountry
+    );
+}
+
+// Update country when city changes
+cityInput.addEventListener('input', () => {
+    const selectedCity = cityInput.value;
+    if (cityCountryMap[selectedCity]) {
+        countryInput.value = cityCountryMap[selectedCity];
+    }
+});
+
+
+// Update city suggestions when country changes
+countryInput.addEventListener('input', () => {
+    const filteredCities = getCitiesByCountry(countryInput.value);
+    const cityOptions = filteredCities.length ? filteredCities : cities;
+
+    // Only update suggestion box without re-adding listeners
+    const suggestionBox = document.getElementById('citySuggestions');
+    cityInput.addEventListener('input', () => {
+        const query = cityInput.value.trim().toLowerCase();
+        suggestionBox.innerHTML = '';
+        if (query) {
+            const filtered = cityOptions.filter(option =>
+                option.toLowerCase().startsWith(query)
+            ).slice(0,5);
+
+            if (filtered.length) {
+                suggestionBox.style.display = 'block';
+                filtered.forEach(option => {
+                    const div = document.createElement('div');
+                    div.className = 'autocomplete-suggestion';
+                    div.textContent = option;
+                    div.addEventListener('click', () => {
+                        cityInput.value = option;
+                        suggestionBox.innerHTML = '';
+                        suggestionBox.style.display = 'none';
+                        // Update country automatically
+                        if (cityCountryMap[option]) {
+                            countryInput.value = cityCountryMap[option];
+                        }
+                    });
+                    suggestionBox.appendChild(div);
+                });
+            } else {
+                suggestionBox.style.display = 'none';
+            }
+        } else {
+            suggestionBox.style.display = 'none';
+        }
+    });
+});
+
+
+
         function displayResult(result) {
             const container = document.getElementById('resultContainer');
             const colorMap = {
