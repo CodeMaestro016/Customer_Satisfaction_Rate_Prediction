@@ -1,2 +1,4 @@
  
 python -m venv venv
+pip install catboost
+pip install flask
