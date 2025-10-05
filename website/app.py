@@ -9,7 +9,7 @@ app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here') # Change t
 
 # Load the CatBoost model
 try:
-    model_path = 'model/catboost_model.pkl'
+    model_path = 'website/model/catboost_model.pkl'
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file {model_path} not found")
     with open(model_path, 'rb') as file:
