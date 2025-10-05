@@ -8,7 +8,7 @@ app.secret_key = 'your-secret-key-here'  # Change this to a secure random key in
 
 # Load the CatBoost model
 try:
-    model_path = 'model/catboost_model.pkl'
+    model_path = 'website/model/catboost_model.pkl'
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file {model_path} not found")
     with open(model_path, 'rb') as file:
@@ -102,4 +102,4 @@ def clear_prediction():
     return jsonify({'success': True})
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)
