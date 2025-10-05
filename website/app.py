@@ -1,15 +1,14 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for  # type: ignore
 import pandas as pd
-from catboost import CatBoostClassifier
 import pickle
 import os
 
 app = Flask(__name__)
-
+app.secret_key = 'your-secret-key-here'  # Change this to a secure random key in production
 
 # Load the CatBoost model
 try:
-    model_path = 'website/model/catboost_model.pkl'
+    model_path = 'model/catboost_model.pkl'
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file {model_path} not found")
     with open(model_path, 'rb') as file:
@@ -18,7 +17,7 @@ except Exception as e:
     print(f"Error loading model: {str(e)}")
     model = None
 
-# Define satisfaction mapping (based on your model's y variables: {'High': 0, 'Low': 1, 'Medium': 2})
+# Define satisfaction mapping
 satisfaction_mapping = {
     0: 'High',
     1: 'Low',
@@ -26,8 +25,19 @@ satisfaction_mapping = {
 }
 
 @app.route('/')
-def index():
-    return render_template('index.html')
+def home():
+    return render_template('home.html')
+
+@app.route('/analytics')
+def analytics():
+    return render_template('analytics.html')
+
+@app.route('/reports')
+def reports():
+    if 'prediction' not in session:
+        # Redirect to analytics if no prediction
+        return redirect(url_for('analytics'))
+    return render_template('reports.html', prediction=session['prediction'])
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -35,10 +45,7 @@ def predict():
         return jsonify({'success': False, 'error': 'Model not loaded. Please check server configuration.'}), 500
 
     try:
-        # Get JSON data from request
         data = request.get_json()
-
-        # Map form field names to model feature names (based on Colab testing code)
         input_data = {
             'Age': float(data.get('age', 0)),
             'Gender': data.get('gender', ''),
@@ -56,17 +63,10 @@ def predict():
             'Days_Before_Travel': float(data.get('days_before_travel', 0))
         }
 
-        # Convert input data to DataFrame
         input_df = pd.DataFrame([input_data])
-
-        # Make prediction
         prediction = model.predict(input_df)[0]
-
-        # Map prediction to satisfaction category
         satisfaction_class = satisfaction_mapping.get(int(prediction), 'Unknown')
 
-        # Determine satisfaction score and color based on prediction
-        # Assuming a normalized score between 1.0 and 5.0 for display
         score_map = {
             'High': 4.5,
             'Medium': 3.0,
@@ -80,37 +80,26 @@ def predict():
             'Unknown': 'warning'
         }
 
-        satisfaction_score = score_map.get(satisfaction_class, 3.0)
-        color = color_map.get(satisfaction_class, 'warning')
-
-        return jsonify({
+        result = {
             'success': True,
-            'satisfaction_score': round(satisfaction_score, 2),
+            'satisfaction_score': round(score_map.get(satisfaction_class, 3.0), 2),
             'satisfaction_class': satisfaction_class,
-            'color': color
-        })
+            'color': color_map.get(satisfaction_class, 'warning'),
+            'input_data': data  # Store full input for report
+        }
+
+        # Store in session for reports
+        session['prediction'] = result
+
+        return jsonify(result)
 
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
 
+@app.route('/clear_prediction', methods=['POST'])
+def clear_prediction():
+    session.pop('prediction', None)
+    return jsonify({'success': True})
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
+    app.run(debug=True, port=5000)
