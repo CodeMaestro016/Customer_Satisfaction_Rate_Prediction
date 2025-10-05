@@ -108,4 +108,6 @@ Security and next steps
 - Add automated tests (unit tests) for the Flask endpoints.
 
 If you'd like, I can add a small smoke test that imports `website.app` and ensures the app object is created and the model loads (or returns a clear error). Tell me if you want that and I will add it.
+
+Deployed link : https://airlitics-predictor.up.railway.app
 # Customer_Satisfaction_Rate_Prediction
