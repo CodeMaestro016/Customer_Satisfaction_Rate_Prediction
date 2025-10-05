@@ -1,6 +1,5 @@
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for  # type: ignore
 import pandas as pd
-from catboost import CatBoostClassifier
 import pickle
 import os
 
