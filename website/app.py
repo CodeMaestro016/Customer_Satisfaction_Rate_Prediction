@@ -1,10 +1,11 @@
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for  # type: ignore
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import pandas as pd
+from catboost import CatBoostClassifier
 import pickle
 import os
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-here'  # Change this to a secure random key in production
+app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here') # Change this to a secure random key in production
 
 # Load the CatBoost model
 try:
@@ -102,4 +103,5 @@ def clear_prediction():
     return jsonify({'success': True})
 
 if __name__ == '__main__':
-    app.run(port=5000, debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', debug=False, port=port)
